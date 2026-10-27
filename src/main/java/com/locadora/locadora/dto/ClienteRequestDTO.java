@@ -8,6 +8,7 @@ public class ClienteRequestDTO {
     private String nome;
 
     @NotBlank
+    @jakarta.validation.constraints.Email
     private String email;
 
     @NotBlank

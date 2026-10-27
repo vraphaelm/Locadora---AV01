@@ -1,16 +1,18 @@
 package com.locadora.locadora.service;
 
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.locadora.locadora.dto.MidiaRequestDTO;
 import com.locadora.locadora.dto.MidiaResponseDTO;
 import com.locadora.locadora.exception.ResourceNotFoundException;
 import com.locadora.locadora.mapper.MidiaMapper;
 import com.locadora.locadora.model.Midia;
 import com.locadora.locadora.repository.MidiaRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public class MidiaService {
 
     private final MidiaRepository repository;
@@ -20,7 +22,6 @@ public class MidiaService {
     }
 
     public List<MidiaResponseDTO> listar() {
-
         return repository.findAll()
                 .stream()
                 .map(MidiaMapper::toDTO)
@@ -28,7 +29,6 @@ public class MidiaService {
     }
 
     public MidiaResponseDTO buscarPorId(Long id) {
-
         Midia midia = repository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Mídia não encontrada"));
@@ -36,17 +36,16 @@ public class MidiaService {
         return MidiaMapper.toDTO(midia);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public MidiaResponseDTO criar(MidiaRequestDTO dto) {
-
         Midia midia = MidiaMapper.toEntity(dto);
-
         Midia salva = repository.save(midia);
 
         return MidiaMapper.toDTO(salva);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public MidiaResponseDTO atualizar(Long id, MidiaRequestDTO dto) {
-
         Midia midia = repository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Mídia não encontrada"));
@@ -61,8 +60,8 @@ public class MidiaService {
         return MidiaMapper.toDTO(atualizada);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void deletar(Long id) {
-
         Midia midia = repository.findById(id)
                 .orElseThrow(() ->
                         new ResourceNotFoundException("Mídia não encontrada"));

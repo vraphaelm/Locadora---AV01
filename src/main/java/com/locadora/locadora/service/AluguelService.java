@@ -6,6 +6,7 @@ import com.locadora.locadora.exception.ResourceNotFoundException;
 import com.locadora.locadora.model.Aluguel;
 import com.locadora.locadora.model.Cliente;
 import com.locadora.locadora.model.Midia;
+import com.locadora.locadora.mapper.AluguelMapper;
 import com.locadora.locadora.repository.AluguelRepository;
 import com.locadora.locadora.repository.ClienteRepository;
 import com.locadora.locadora.repository.MidiaRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public class AluguelService {
 
     private final AluguelRepository aluguelRepository;
@@ -32,43 +34,35 @@ public class AluguelService {
     }
 
     public List<AluguelResponseDTO> listar() {
-
         return aluguelRepository.findAll()
                 .stream()
-                .map(this::converterParaDTO)
+                .map(AluguelMapper::toDTO)
                 .toList();
     }
 
     public AluguelResponseDTO buscarPorId(Long id) {
-
         Aluguel aluguel = aluguelRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Aluguel não encontrado"
-                        )
-                );
+                        new ResourceNotFoundException("Aluguel não encontrado"));
 
-        return converterParaDTO(aluguel);
+        return AluguelMapper.toDTO(aluguel);
     }
 
-    public AluguelResponseDTO criar(
-            AluguelRequestDTO dto) {
+    @org.springframework.transaction.annotation.Transactional
+    public AluguelResponseDTO criar(AluguelRequestDTO dto) {
 
-        Cliente cliente = clienteRepository
-                .findById(dto.getClienteId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Cliente não encontrado"
-                        )
-                );
+        if (dto.getDataDevolucao().isBefore(dto.getDataAluguel())) {
+            throw new IllegalArgumentException(
+                    "Data de devolução não pode ser anterior ao aluguel");
+        }
 
-        Midia midia = midiaRepository
-                .findById(dto.getMidiaId())
+        Cliente cliente = clienteRepository.findById(dto.getClienteId())
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Mídia não encontrada"
-                        )
-                );
+                        new ResourceNotFoundException("Cliente não encontrado"));
+
+        Midia midia = midiaRepository.findById(dto.getMidiaId())
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Mídia não encontrada"));
 
         Aluguel aluguel = new Aluguel();
 
@@ -77,34 +71,17 @@ public class AluguelService {
         aluguel.setDataAluguel(dto.getDataAluguel());
         aluguel.setDataDevolucao(dto.getDataDevolucao());
 
-        Aluguel salvo =
-                aluguelRepository.save(aluguel);
+        Aluguel salvo = aluguelRepository.save(aluguel);
 
-        return converterParaDTO(salvo);
+        return AluguelMapper.toDTO(salvo);
     }
 
+    @org.springframework.transaction.annotation.Transactional
     public void deletar(Long id) {
-
-        Aluguel aluguel = aluguelRepository
-                .findById(id)
+        Aluguel aluguel = aluguelRepository.findById(id)
                 .orElseThrow(() ->
-                        new ResourceNotFoundException(
-                                "Aluguel não encontrado"
-                        )
-                );
+                        new ResourceNotFoundException("Aluguel não encontrado"));
 
         aluguelRepository.delete(aluguel);
-    }
-
-    private AluguelResponseDTO converterParaDTO(
-            Aluguel aluguel) {
-
-        return new AluguelResponseDTO(
-                aluguel.getId(),
-                aluguel.getCliente().getNome(),
-                aluguel.getMidia().getTitulo(),
-                aluguel.getDataAluguel(),
-                aluguel.getDataDevolucao()
-        );
     }
 }

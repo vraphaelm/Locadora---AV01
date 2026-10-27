@@ -18,45 +18,37 @@ import com.locadora.locadora.service.AluguelService;
 
 import jakarta.validation.Valid;
 
+@io.swagger.v3.oas.annotations.security.SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/alugueis")
 public class AluguelController {
 
     private final AluguelService service;
 
-    public AluguelController(
-            AluguelService service) {
-
+    public AluguelController(AluguelService service) {
         this.service = service;
     }
 
     @GetMapping
     public List<AluguelResponseDTO> listar() {
-
         return service.listar();
     }
 
     @GetMapping("/{id}")
-    public AluguelResponseDTO buscarPorId(
-            @PathVariable Long id) {
-
+    public AluguelResponseDTO buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public AluguelResponseDTO criar(
-            @RequestBody @Valid
-            AluguelRequestDTO dto) {
-
+            @RequestBody @Valid AluguelRequestDTO dto) {
         return service.criar(dto);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deletar(
-            @PathVariable Long id) {
-
+    public void deletar(@PathVariable Long id) {
         service.deletar(id);
     }
 }

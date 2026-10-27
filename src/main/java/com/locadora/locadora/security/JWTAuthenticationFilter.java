@@ -1,30 +1,32 @@
-
 package com.locadora.locadora.security;
 
-import com.locadora.locadora.service.UsuarioDetailsService;
+import java.io.IOException;
+
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.locadora.locadora.service.impl.JWTService;
+
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
     private final JWTService jwtService;
-    private final UsuarioDetailsService usuarioDetailsService;
+    private final UserDetailsService usuarioDetailsService;
 
     public JWTAuthenticationFilter(
             JWTService jwtService,
-            UsuarioDetailsService usuarioDetailsService) {
+            UserDetailsService usuarioDetailsService) {
         this.jwtService = jwtService;
         this.usuarioDetailsService = usuarioDetailsService;
     }
@@ -46,13 +48,15 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
         String token = cabecalho.substring(7);
 
         try {
-            String email = jwtService.getEmail(token);
+            String email = jwtService.extractUsername(token);
 
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
+            if (email != null
+                    && SecurityContextHolder.getContext().getAuthentication() == null) {
+
                 UserDetails usuario =
                         usuarioDetailsService.loadUserByUsername(email);
 
-                if (jwtService.tokenValido(token, usuario)) {
+                if (jwtService.isTokenValid(token, usuario)) {
                     UsernamePasswordAuthenticationToken autenticacao =
                             new UsernamePasswordAuthenticationToken(
                                     usuario, null, usuario.getAuthorities());
