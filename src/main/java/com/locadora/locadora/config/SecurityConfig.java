@@ -22,11 +22,11 @@ import io.swagger.v3.oas.annotations.security.SecurityScheme;
         bearerFormat = "JWT")
 public class SecurityConfig {
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http,
-            JWTAuthenticationFilter filter,
-            AuthenticationProvider provider) throws Exception {
+        @Bean
+        public SecurityFilterChain securityFilterChain(
+                HttpSecurity http,
+                JWTAuthenticationFilter filter,
+                AuthenticationProvider provider) throws Exception {
 
         return http.csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
@@ -41,30 +41,29 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .exceptionHandling(errors -> errors
                         .authenticationEntryPoint((request, response, exception) -> {
-                            response.setStatus(401);
-                            response.setContentType("application/json;charset=UTF-8");
-                            response.getWriter().write(
-                                    "{\"erro\":\"Autenticação necessária ou token inválido\"}");
+                                response.setStatus(401);
+                                response.setContentType("application/json;charset=UTF-8");
+                                response.getWriter().write(
+                                        "{\"erro\":\"Autenticação necessária ou token inválido\"}");
                         })
                         .accessDeniedHandler((request, response, exception) -> {
-                            response.setStatus(403);
-                            response.setContentType("application/json;charset=UTF-8");
-                            response.getWriter().write(
-                                    "{\"erro\":\"Acesso negado\"}");
+                                response.setStatus(403);
+                                response.setContentType("application/json;charset=UTF-8");
+                                response.getWriter().write(
+                                        "{\"erro\":\"Acesso negado\"}");
                         }))
                 .authenticationProvider(provider)
                 .addFilterBefore(
                         filter, UsernamePasswordAuthenticationFilter.class)
                 .build();
-    }
+        }
 
-    // O filtro deve executar somente dentro da cadeia do Spring Security.
-    @Bean
-    public FilterRegistrationBean<JWTAuthenticationFilter> jwtFilterRegistration(
-            JWTAuthenticationFilter filter) {
+        @Bean
+        public FilterRegistrationBean<JWTAuthenticationFilter> jwtFilterRegistration(
+                JWTAuthenticationFilter filter) {
         FilterRegistrationBean<JWTAuthenticationFilter> registration =
                 new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
-    }
+        }
 }

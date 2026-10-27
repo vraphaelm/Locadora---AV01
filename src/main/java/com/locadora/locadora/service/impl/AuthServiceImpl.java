@@ -14,18 +14,18 @@ import com.locadora.locadora.service.AuthService;
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private final AuthenticationManager authenticationManager;
-    private final JWTService jwtService;
+        private final AuthenticationManager authenticationManager;
+        private final JWTService jwtService;
 
-    public AuthServiceImpl(
-            AuthenticationManager authenticationManager,
-            JWTService jwtService) {
+        public AuthServiceImpl(
+                AuthenticationManager authenticationManager,
+                JWTService jwtService) {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
-    }
+        }
 
-    @Override
-    public LoginResponse login(LoginRequest dados) {
+        @Override
+        public LoginResponse login(LoginRequest dados) {
         Authentication autenticacao = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         dados.email(), dados.senha()));
@@ -46,5 +46,5 @@ public class AuthServiceImpl implements AuthService {
                 "Bearer",
                 usuario.getUsername(),
                 perfil);
-    }
+        }
 }
